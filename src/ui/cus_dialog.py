@@ -1,5 +1,6 @@
 import atexit
 import base64
+import io
 import os
 import tempfile
 import zlib
@@ -63,7 +64,8 @@ class CustomDialog(ttk.Toplevel):
             deadline.config(compound='left')
             deadline.config(text=str(dialog.date_selected))
 
-        self.img = PIL.Image.open('icon/calendar.png').resize((25, 25))
+        binary_data = base64.b64decode(ICON_BASE64)
+        self.img = PIL.Image.open(io.BytesIO(binary_data)).resize((25, 25))
         self.photo = ImageTk.PhotoImage(self.img)
         deadline = ttk.Label(bt_frame, image=self.photo, text='截止日期')
         deadline.bind("<Button-1>", on_label_click)
@@ -92,8 +94,6 @@ class CustomDialog(ttk.Toplevel):
 
         add_task_button = ttk.Button(master, text='添加任务', command=on_button_click)
         add_task_button.pack(side=ttk.TOP, anchor='e', padx=5, pady=1)
-
-        #
 
 
 def create_icon() -> str:

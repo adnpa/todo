@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from typing import List
 
@@ -7,10 +8,12 @@ db_file = 'data/todo.db'
 
 
 class DBService:
-    conn = sqlite3.connect(db_file)
-    c = conn.cursor()
 
     def __init__(self):
+        if not os.path.isdir("data"):
+            os.makedirs("data")
+        self.conn = sqlite3.connect(db_file)
+        self.c = self.conn.cursor()
         self.c.execute('''CREATE TABLE IF NOT EXISTS todo
                      (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, description TEXT, priority INTEGER, deadline DATE, tag TEXT, completed BOOLEAN)''')
 
