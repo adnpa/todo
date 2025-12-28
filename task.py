@@ -12,8 +12,8 @@ class priority:
 
 @dataclass
 class Task:
-    id: str | None = None
     name: str
+    id: str | None = None
     compoleted: bool = False
 
     description: Optional[str] = None
@@ -39,9 +39,7 @@ class Task:
         """
         # 先复制 other，再把 id 改回 self.id
         return replace(other, id=self.id)
-    
-    
-    
+
     # def __init__(self, name):
     #     self.id = str(uuid.uuid4())
     #     self.name = name
