@@ -1,6 +1,6 @@
 from task_list import TaskList
 from task import Task
-
+from db import DBService
 class TaskManager:
     # ll = {}
     # {list_id, list}
@@ -10,9 +10,10 @@ class TaskManager:
     # self.tasks = TaskList()
     def __init__(self):
         self.tl_l = []
-
+        self.db = DBService()
+        
     def get_tasklist_info(self):
-        return self.tl_l
+        return self.db.get_list_tasks()
 
     def create_task_list(self, name):
         """Initialize an empty task list."""
@@ -37,9 +38,9 @@ class TaskManager:
         return self.tl_l[position].data
     
     
-tm = TaskManager()
-tm.create_task_list("默认任务列表")
-tm.add_task(0, "学习Python")
-print(tm.get_tasks(0))
-print(tm.get_tasklist_info())
+# tm = TaskManager()
+# tm.create_task_list("默认任务列表")
+# tm.add_task(0, "学习Python")
+# print(tm.get_tasks(0))
+# print(tm.get_tasklist_info())
 

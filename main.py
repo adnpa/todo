@@ -1,13 +1,10 @@
 from fastapi import FastAPI
 from task_manager import TaskManager
-from pydantic import BaseModel
-
+from db import DBService
+from req import *
 
 app = FastAPI()
-
-tm = TaskManager()
-tm.create_task_list("默认任务列表")
-tm.add_task(0, "学习Python")
+conn = DBService()
 
 # ================================
 # List
@@ -17,75 +14,88 @@ tm.add_task(0, "学习Python")
 @app.get("/task-lists")
 async def get_task_lists():
     """获取任务列表基础信息"""
-    # [{"pos":1, "name":"task1"}]
-    result = []
-    taskls = tm.get_tasklist_info()
-    for i, tl in enumerate(taskls):
-        result.append({"pos": i, "name": tl.name})
-    return result
+    res = []
+    lists = conn.get_lists()
+    for list in lists:
+        res.append({"id": list[0], "name": list[1]})
+    return res
 
 
-class CreateListReq(BaseModel):
-    name: str
+@app.post("/add-list")
+async def add_list(req: AddListReq):
+    conn.add_list(req.name)
+    return {"msg": "ok"}
 
 
-@app.post("/create-task-list")
-async def create_task_list(req: CreateListReq):
-    """创建新任务列表"""
-    print(f"创建任务列表: {req.name}")
-    tm.create_task_list(req.name)
-    print(tm.get_tasklist_info())
-    return {"message": "ok"}
+@app.post("/delete-list")
+async def delete_list(req: DeleteListReq):
+    conn.delete_list(req.id)
+    return {"msg": "ok"}
 
-class DeleteListReq(BaseModel):
-    pos: int
 
-@app.post("/delete-task-list")
-async def delete_task_list(req: DeleteListReq):
-    """删除任务列表"""
-    tm.delete_task_list(req.pos)
-    return {"message": "Hello World"}
+@app.post("/list/update-name")
+async def update_list_name(req: UpdateListNameReq):
+    conn.update_list_name(req.id, req.name)
+    return {"msg": "ok"}
+
 
 # ================================
 # Task
 # ================================
 
 
-@app.get("/tasks/{pos}")
-async def tasks(pos: int):
-    """获取任务列表"""
+@app.get("/lists/{id}/tasks")
+async def tasks(id: int):
+    tasks = conn.get_list_tasks(id)
     result = []
-    tasks = tm.get_tasks(pos)
-    print(tasks)
-    # for i, task in enumerate(tasks):
-    #     print(task)
-    # result.append({"pos": i, "name": task.name})
-    return tasks
+    for task in tasks:
+        result.append(
+            {"id": task[0], "name": task[1], "completed": task[2]})
+    return result
 
 
-@app.get("/task_detail/")
-async def task_detail(list_id: int, task_id: int):
-    """获取任务详细信息"""
-    return {"message": "Hello World"}
-
-
-class CreateTaskReq(BaseModel):
-    pos: int
-    name: str
+@app.get("/task/{id}")
+async def task_detail(id: int):
+    task = conn.get_task(id)
+    # return task
+    if task:
+        return {
+            "id": task[0],
+            "name": task[1],
+            "completed": task[2],
+            "list_id": task[3],
+            # "description": task[2],
+            # "priority": task[3],
+            # "start_date": task[4],
+            # "end_date": task[5],
+            # "tags": task[6],
+        }
+    else:
+        return None
 
 
 @app.post("/add-task")
-async def add_task(req: CreateTaskReq):
-    """添加新任务"""
-    print(f"添加任务: {req.name} 到列表 {req.pos}")
-    tm.add_task(req.pos, req.name)
-    return {"message": "Hello World"}
+async def add_task(req: AddTaskReq):
+    conn.add_task(req.id, req.name)
+    return {"msg": "ok"}
 
 
-@app.post("/remove_task")
-async def remove_task():
-    """删除任务"""
-    return {"message": "Hello World"}
+@app.post("/delete_task")
+async def delete_task(req: DeleteTaskReq):
+    conn.delete_task(req.id)
+    return {"msg": "ok"}
+
+
+@app.post("/reverse-completed")
+async def reverse_completed(req: ReverseCompleteReq):
+    conn.reverse_completed(req.id)
+    return {"msg": "ok"}
+
+
+@app.post("/task/update-name")
+async def update_task_name(req: UpdateTaskNameReq):
+    conn.update_task_name(req.id, req.name)
+    return {"msg": "ok"}
 
 
 # @app.get("/")
